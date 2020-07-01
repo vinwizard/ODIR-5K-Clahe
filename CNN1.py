@@ -14,10 +14,18 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.preprocessing.image import ImageDataGenerator
 train_datagen = ImageDataGenerator(
-    rescale = 1./255, #feature scaling each pixel on image
-    shear_range = 0.2,
-    zoom_range = 0.2,
-    horizontal_flip = True)
+    rescale = 1./255,
+        featurewise_center = False,  
+        samplewise_center = False, 
+        featurewise_std_normalization = False,  
+        samplewise_std_normalization = False,  
+        zca_whitening = False,  
+        rotation_range = 10,  
+        zoom_range = 0.1, 
+        width_shift_range = 0.2,  
+        height_shift_range = 0.2, 
+        horizontal_flip = True,  
+        vertical_flip = False)
 training_set = train_datagen.flow_from_directory(
         'Dataset/Training',
         target_size=(64, 64),
@@ -41,13 +49,15 @@ cnn.add(tf.keras.layers.MaxPool2D(pool_size = 2, strides = 2))
 cnn.add(tf.keras.layers.Conv2D(filters= 32, kernel_size = 3,activation = 'relu'))
 cnn.add(tf.keras.layers.MaxPool2D(pool_size = 2, strides = 2))
 
+
+
 #Flattening
 cnn.add(tf.keras.layers.Flatten())
 #now this is similar to any dataset as worked on beofre, so apply normal neural network to it
 #fully connected layer
 cnn.add(tf.keras.layers.Dense(units = 128, activation= 'relu'))
 #o/p layer
-cnn.add(tf.keras.layers.Dense(units = 7, activation= 'sigmoid'))
+cnn.add(tf.keras.layers.Dense(units = 17, activation= 'sigmoid'))
 
 #compile
 cnn.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
@@ -65,14 +75,17 @@ def show_final_history(history):
     
     
 history = cnn.fit_generator(training_set,
-                  steps_per_epoch = int(5269/32),
+                  steps_per_epoch = int(6588/32),
                   epochs = 32,
                   validation_data = test_set,
-                  validation_steps = int(1047/32))
+                  validation_steps = int(1377/32))
 
 show_final_history(history)
+print(max(history.history["val_accuracy"]))
+print(len(history.history["val_accuracy"]))
+print(history.history["confusion matrix"])
 
-import numpy as np
+
 from keras.preprocessing import image 
 test_image = image.load_img('dataset/single_prediction/cat_or_dog_1.jpg', target_size =(64,64) ) #converts to PIL img
 #now to convert it to array 
